@@ -1,0 +1,18 @@
+[submodule "rtapi"]
+	path = rtapi
+	url = https://github.com/RaidcoreGG/GW2-RealTime-API-Releases
+	branch = dbc89dde86fb8846fec4ce45667e79d7df0afb06
+[submodule "mumble"]
+	path = mumble
+	url = https://github.com/RaidcoreGG/RCGG-lib-mumble-api
+	branch = 8c93788c3042dd6b401c0a93d17e34e1d4414e9a
+[submodule "nexus"]
+	path = nexus
+	url = https://github.com/RaidcoreGG/RCGG-lib-nexus-api
+	branch = 9b2c53df86c00db6495642bfcff2d0611bd957ef
+[submodule "arcdps"]
+	path = arcdps
+	url = https://github.com/RaidcoreGG/RCGG-lib-arcdps-api
+[submodule "arcdps_unofficial_extras_releases"]
+	path = arcdps_unofficial_extras_releases
+	url = https://github.com/Krappa322/arcdps_unofficial_extras_releases
