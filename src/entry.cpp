@@ -59,7 +59,7 @@ void DeregisterQuickAccessShortcut()
 
 extern "C" __declspec(dllexport) AddonDefinition_t *GetAddonDef()
 {
-    AddonDef.Signature = -2443566;
+    AddonDef.Signature = -24435663;
     AddonDef.APIVersion = NEXUS_API_VERSION;
     AddonDef.Name = "GW2_GolemRespawn";
     AddonDef.Version.Major = MAJOR;

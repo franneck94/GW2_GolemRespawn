@@ -66,6 +66,7 @@ add_library(first_party_libs STATIC
     "src/Textures.cpp"
     "src/MumbleUtils.cpp"
     "src/Render.cpp"
+    "src/Utils.cpp"
     "src/TypesUtils.cpp"
 )
 target_include_directories(first_party_libs PUBLIC
@@ -86,4 +87,11 @@ target_link_libraries(GW2_GolemRespawn PRIVATE
 set_target_properties(GW2_GolemRespawn PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/bin/debug"
     RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/bin/release"
+)
+
+add_custom_command(TARGET GW2_GolemRespawn POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_SOURCE_DIR}/bin/$<CONFIG>"
+        "D:/GW2/addons" || (exit 0)
+    COMMENT "Copying dll."
 )
