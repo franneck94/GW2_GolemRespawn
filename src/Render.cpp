@@ -6,7 +6,7 @@
 #include <iostream>
 #include <string>
 #include <thread>
-#include <utility>
+#include <tuple>
 
 #include "imgui.h"
 
@@ -22,28 +22,37 @@
 
 namespace
 {
-static const std::string CHAT_MESSAGE = "/g Golem respawned";
+static const std::string CHAT_MESSAGE = "Golem respawned";
 
 constexpr int BASE_WIDTH = 2160;
 constexpr int BASE_HEIGHT = 1440;
 
-constexpr float REMOVE_X_RATIO = 1000.0f / BASE_WIDTH;  // ≈ 0.463
+constexpr float REMOVE_X_RATIO = 0.45;
 constexpr float REMOVE_Y_RATIO = 390.0f / BASE_HEIGHT;  // ≈ 0.271
-constexpr float RESPAWN_X_RATIO = 1000.0f / BASE_WIDTH; // ≈ 0.463
-constexpr float RESPAWN_Y_RATIO = 450.0f / BASE_HEIGHT; // ≈ 0.313
+constexpr float RESPAWN_X_RATIO = 0.45;
+constexpr float RESPAWN_Y_RATIO = 445.0f / BASE_HEIGHT; // ≈ 0.313
+constexpr float CLOSE_X_RATIO = 0.45;
+constexpr float CLOSE_Y_RATIO = 510.0f / BASE_HEIGHT; // ≈ 0.354
 
-std::pair<POINT, POINT> GetScaledClickPositions()
+constexpr float MIDDLE_WINDOW_X = 0.5f;
+constexpr float MIDDLE_WINDOW_Y = 0.5f;
+
+std::tuple<POINT, POINT, POINT, POINT> GetScaledClickPositions()
 {
     int screen_width = GetSystemMetrics(SM_CXSCREEN);
     int screen_height = GetSystemMetrics(SM_CYSCREEN);
 
-    POINT remove_pos, respawn_pos;
+    POINT remove_pos, respawn_pos, close_pos, middle_pos;
     remove_pos.x = static_cast<int>(screen_width * REMOVE_X_RATIO);
     remove_pos.y = static_cast<int>(screen_height * REMOVE_Y_RATIO);
     respawn_pos.x = static_cast<int>(screen_width * RESPAWN_X_RATIO);
     respawn_pos.y = static_cast<int>(screen_height * RESPAWN_Y_RATIO);
+    close_pos.x = static_cast<int>(screen_width * CLOSE_X_RATIO);
+    close_pos.y = static_cast<int>(screen_height * CLOSE_Y_RATIO);
+    middle_pos.x = static_cast<int>(screen_width * MIDDLE_WINDOW_X);
+    middle_pos.y = static_cast<int>(screen_height * MIDDLE_WINDOW_Y);
 
-    return std::make_pair(remove_pos, respawn_pos);
+    return std::make_tuple(remove_pos, respawn_pos, close_pos, middle_pos);
 }
 
 std::string GetLogMessage()
@@ -94,14 +103,14 @@ void RenderType::render(ID3D11Device *pd3dDevice)
         const auto window_flags =
             ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse;
 
-        const auto window_width = 300.0f;
+        const auto window_width = 270.0f;
         ImGui::SetNextWindowSize(ImVec2(window_width, 0), ImGuiCond_Always);
         if (ImGui::Begin("Golem Respawn Tool", &show_golem_window, window_flags))
         {
 
             const auto screen_width = GetSystemMetrics(SM_CXSCREEN);
             const auto screen_height = GetSystemMetrics(SM_CYSCREEN);
-            auto [remove_pos, respawn_pos] = GetScaledClickPositions();
+            auto [remove_pos, respawn_pos, close_pos, middle_pos] = GetScaledClickPositions();
 
             // #if _DEBUG
             //             if (currently_in_fight)
@@ -122,14 +131,16 @@ void RenderType::render(ID3D11Device *pd3dDevice)
             if (ImGui::Button("Respawn", ImVec2(button_width1, 40)))
             {
                 const auto log_message = GetLogMessage();
-                auto [remove_pos, respawn_pos] = GetScaledClickPositions();
+                auto [remove_pos, respawn_pos, close_pos, middle_pos] = GetScaledClickPositions();
 
                 std::thread([=]() {
                     UseInteractionKey();
                     Sleep(200);
                     SimulateMouseClick(respawn_pos.x, respawn_pos.y);
                     Sleep(200);
-                    SendChatMessage(log_message);
+                    SimulateMouseClick(close_pos.x, close_pos.y);
+                    Sleep(200);
+                    SimulateMouseClick(middle_pos.x, middle_pos.y);
                 }).detach();
             }
 
@@ -138,7 +149,7 @@ void RenderType::render(ID3D11Device *pd3dDevice)
             if (ImGui::Button("Reset->Respawn", ImVec2(button_width2, 40)))
             {
                 const auto log_message = GetLogMessage();
-                auto [remove_pos, respawn_pos] = GetScaledClickPositions();
+                auto [remove_pos, respawn_pos, close_pos, middle_pos] = GetScaledClickPositions();
 
                 std::thread([=]() {
                     UseInteractionKey();
@@ -147,7 +158,9 @@ void RenderType::render(ID3D11Device *pd3dDevice)
                     Sleep(200);
                     SimulateMouseClick(respawn_pos.x, respawn_pos.y);
                     Sleep(200);
-                    SendChatMessage(log_message);
+                    SimulateMouseClick(close_pos.x, close_pos.y);
+                    Sleep(200);
+                    SimulateMouseClick(middle_pos.x, middle_pos.y);
                 }).detach();
             }
         }
