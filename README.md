@@ -2,9 +2,9 @@
 
 A Guild Wars 2 addon that automatically handles golem respawning in the training area, so you don't have to manually click through menus every time.
 
-**Here's what the tool remembers:**
+'**Logic**:
 
-- **Remove Golem Button**
-- **Respawn Golem Button**
-- **Close Dialog Button**
-- **Screen Center**
+1. Press f to interact 
+2. Remove Current Golem
+3. Spawn new Golem
+4. Position mouse in the middle of the screen
