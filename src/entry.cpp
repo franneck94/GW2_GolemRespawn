@@ -67,7 +67,7 @@ extern "C" __declspec(dllexport) AddonDefinition_t *GetAddonDef()
     AddonDef.Version.Build = BUILD;
     AddonDef.Version.Revision = REVISION;
     AddonDef.Author = "Franneck.1274";
-    AddonDef.Description = "...";
+    AddonDef.Description = "Respawn golem without fat fingering the wrong button";
     AddonDef.Load = AddonLoad;
     AddonDef.Unload = AddonUnload;
     AddonDef.Flags = AF_None;

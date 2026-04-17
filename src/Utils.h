@@ -7,3 +7,5 @@
 void SimulateMouseClick(int x, int y);
 
 void SendChatMessage(const std::string& message);
+
+void UseInteractionKey();

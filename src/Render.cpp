@@ -1,46 +1,27 @@
 #include <windows.h>
 
-#include <commdlg.h>
-#include <wininet.h>
-#pragma comment(lib, "wininet.lib")
-#include <wincodec.h>
-#pragma comment(lib, "windowscodecs.lib")
-#pragma comment(lib, "ole32.lib")
-#pragma comment(lib, "user32.lib")
-#include <d3d11.h>
-
-#include <algorithm>
-#include <cmath>
+#include <chrono>
 #include <filesystem>
-#include <fstream>
-#include <functional>
 #include <future>
 #include <iostream>
-#include <map>
-#include <numbers>
-#include <set>
-#include <sstream>
 #include <string>
 #include <thread>
-#include <utility>
 
 #include "imgui.h"
 
 #include "mumble/Mumble.h"
 
-#include "Defines.h"
 #include "MumbleUtils.h"
 #include "Render.h"
 #include "Settings.h"
 #include "Shared.h"
-#include "Textures.h"
 #include "Types.h"
 #include "Utils.h"
 #include "Version.h"
 
 namespace
 {
-static const std::string CHAT_MESSAGE = "Golem respawned!";
+static const std::string CHAT_MESSAGE = "/g Golem respawned";
 
 constexpr int total_size_x = 2160;
 constexpr int total_size_y = 1440;
@@ -96,14 +77,34 @@ void RenderType::render(ID3D11Device *pd3dDevice)
 
             if (ImGui::Button("Reset Golem", ImVec2(150, 40)))
             {
+                const auto curr_time = std::chrono::system_clock::now();
+                const std::time_t curr_time_t = std::chrono::system_clock::to_time_t(curr_time);
+                std::tm tm_info{};
+                localtime_s(&tm_info, &curr_time_t);
+                char time_buf[9];
+                std::strftime(time_buf, sizeof(time_buf), "%H:%M:%S", &tm_info);
+                const auto log_message = std::string("Golem reset triggered at ") + time_buf;
+
                 if (currently_in_fight)
                 {
                     std::thread([=]() {
-                        SendChatMessage(CHAT_MESSAGE);
+                        UseInteractionKey();
                         Sleep(200);
                         SimulateMouseClick(remove_x, remove_y);
                         Sleep(200);
                         SimulateMouseClick(respawn_x, respawn_y);
+                        Sleep(200);
+                        SendChatMessage(log_message);
+                    }).detach();
+                }
+                else
+                {
+                    std::thread([=]() {
+                        UseInteractionKey();
+                        Sleep(200);
+                        SimulateMouseClick(respawn_x, respawn_y);
+                        Sleep(200);
+                        SendChatMessage(log_message);
                     }).detach();
                 }
             }
