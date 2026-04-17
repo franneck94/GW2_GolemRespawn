@@ -6,6 +6,7 @@
 #include <iostream>
 #include <string>
 #include <thread>
+#include <utility>
 
 #include "imgui.h"
 
@@ -23,14 +24,41 @@ namespace
 {
 static const std::string CHAT_MESSAGE = "/g Golem respawned";
 
-constexpr int total_size_x = 2160;
-constexpr int total_size_y = 1440;
+constexpr int BASE_WIDTH = 2160;
+constexpr int BASE_HEIGHT = 1440;
 
-constexpr int remove_x = 1000;
-constexpr int remove_y = 390;
+constexpr float REMOVE_X_RATIO = 1000.0f / BASE_WIDTH;  // ≈ 0.463
+constexpr float REMOVE_Y_RATIO = 390.0f / BASE_HEIGHT;  // ≈ 0.271
+constexpr float RESPAWN_X_RATIO = 1000.0f / BASE_WIDTH; // ≈ 0.463
+constexpr float RESPAWN_Y_RATIO = 450.0f / BASE_HEIGHT; // ≈ 0.313
 
-constexpr int respawn_x = 1000;
-constexpr int respawn_y = 450;
+std::pair<POINT, POINT> GetScaledClickPositions()
+{
+    int screen_width = GetSystemMetrics(SM_CXSCREEN);
+    int screen_height = GetSystemMetrics(SM_CYSCREEN);
+
+    POINT remove_pos, respawn_pos;
+    remove_pos.x = static_cast<int>(screen_width * REMOVE_X_RATIO);
+    remove_pos.y = static_cast<int>(screen_height * REMOVE_Y_RATIO);
+    respawn_pos.x = static_cast<int>(screen_width * RESPAWN_X_RATIO);
+    respawn_pos.y = static_cast<int>(screen_height * RESPAWN_Y_RATIO);
+
+    return std::make_pair(remove_pos, respawn_pos);
+}
+
+std::string GetLogMessage()
+{
+    const auto curr_time = std::chrono::system_clock::now();
+    const std::time_t curr_time_t = std::chrono::system_clock::to_time_t(curr_time);
+
+    std::tm tm_info{};
+    localtime_s(&tm_info, &curr_time_t);
+    char time_buf[9];
+    std::strftime(time_buf, sizeof(time_buf), "%H:%M:%S", &tm_info);
+    const auto log_message = std::string("Golem reset triggered at ") + time_buf;
+
+    return log_message;
+}
 } // namespace
 
 RenderType::~RenderType()
@@ -41,7 +69,9 @@ void RenderType::render(ID3D11Device *pd3dDevice)
 {
     Globals::RenderData.pd3dDevice = pd3dDevice;
 
-    if (!Settings::ShowWindow)
+    const auto map_valid = IsValidMap();
+
+    if (!Settings::ShowWindow || !map_valid)
         return;
 
     static bool was_in_fight = false;
@@ -61,52 +91,64 @@ void RenderType::render(ID3D11Device *pd3dDevice)
             first_time = false;
         }
 
-        ImGuiWindowFlags window_flags = ImGuiWindowFlags_AlwaysAutoResize;
+        const auto window_flags =
+            ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse;
 
+        const auto window_width = 300.0f;
+        ImGui::SetNextWindowSize(ImVec2(window_width, 0), ImGuiCond_Always);
         if (ImGui::Begin("Golem Respawn Tool", &show_golem_window, window_flags))
         {
-            ImGui::Text("GW2 Golem Respawn Helper");
-            ImGui::Separator();
 
-            if (currently_in_fight)
-                ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Status: IN COMBAT");
-            else
-                ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Status: Out of combat");
+            const auto screen_width = GetSystemMetrics(SM_CXSCREEN);
+            const auto screen_height = GetSystemMetrics(SM_CYSCREEN);
+            auto [remove_pos, respawn_pos] = GetScaledClickPositions();
+
+            // #if _DEBUG
+            //             if (currently_in_fight)
+            //                 ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Status: IN COMBAT");
+            //             else
+            //                 ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Status: Out of combat");
+            //             ImGui::Text("Screen: %dx%d", screen_width, screen_height);
+            //             ImGui::Text("Remove pos: (%d, %d)", remove_pos.x, remove_pos.y);
+            //             ImGui::Text("Respawn pos: (%d, %d)", respawn_pos.x, respawn_pos.y);
+            //             ImGui::Spacing();
+            // #endif
 
             ImGui::Spacing();
 
-            if (ImGui::Button("Reset Golem", ImVec2(150, 40)))
-            {
-                const auto curr_time = std::chrono::system_clock::now();
-                const std::time_t curr_time_t = std::chrono::system_clock::to_time_t(curr_time);
-                std::tm tm_info{};
-                localtime_s(&tm_info, &curr_time_t);
-                char time_buf[9];
-                std::strftime(time_buf, sizeof(time_buf), "%H:%M:%S", &tm_info);
-                const auto log_message = std::string("Golem reset triggered at ") + time_buf;
+            const auto button_width1 = (window_width - ImGui::GetStyle().ItemSpacing.x) * 0.35f;
+            const auto button_width2 = (window_width - ImGui::GetStyle().ItemSpacing.x) * 0.65f;
 
-                if (currently_in_fight)
-                {
-                    std::thread([=]() {
-                        UseInteractionKey();
-                        Sleep(200);
-                        SimulateMouseClick(remove_x, remove_y);
-                        Sleep(200);
-                        SimulateMouseClick(respawn_x, respawn_y);
-                        Sleep(200);
-                        SendChatMessage(log_message);
-                    }).detach();
-                }
-                else
-                {
-                    std::thread([=]() {
-                        UseInteractionKey();
-                        Sleep(200);
-                        SimulateMouseClick(respawn_x, respawn_y);
-                        Sleep(200);
-                        SendChatMessage(log_message);
-                    }).detach();
-                }
+            if (ImGui::Button("Respawn", ImVec2(button_width1, 40)))
+            {
+                const auto log_message = GetLogMessage();
+                auto [remove_pos, respawn_pos] = GetScaledClickPositions();
+
+                std::thread([=]() {
+                    UseInteractionKey();
+                    Sleep(200);
+                    SimulateMouseClick(respawn_pos.x, respawn_pos.y);
+                    Sleep(200);
+                    SendChatMessage(log_message);
+                }).detach();
+            }
+
+            ImGui::SameLine();
+
+            if (ImGui::Button("Reset->Respawn", ImVec2(button_width2, 40)))
+            {
+                const auto log_message = GetLogMessage();
+                auto [remove_pos, respawn_pos] = GetScaledClickPositions();
+
+                std::thread([=]() {
+                    UseInteractionKey();
+                    Sleep(200);
+                    SimulateMouseClick(remove_pos.x, remove_pos.y);
+                    Sleep(200);
+                    SimulateMouseClick(respawn_pos.x, respawn_pos.y);
+                    Sleep(200);
+                    SendChatMessage(log_message);
+                }).detach();
             }
         }
 

@@ -25,12 +25,10 @@ Mumble::EMapType GetCurrentMapType()
 bool IsValidMap()
 {
     const auto id = GetCurrentMapID();
-    if (id == 1154 || id == 1155)
+    if (id == 1154)
         return true;
 
-    const auto map_type = GetCurrentMapType();
-    return map_type == Mumble::EMapType::Public || map_type == Mumble::EMapType::Instance ||
-           map_type == Mumble::EMapType::Public_Mini || map_type == Mumble::EMapType::BigBattle;
+    return false;
 }
 
 bool IsInfight()
