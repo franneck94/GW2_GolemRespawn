@@ -6,6 +6,11 @@
 #include "Utils.h"
 
 
+void MoveMouse(int x, int y)
+{
+    SetCursorPos(x, y);
+}
+
 void SimulateMouseClick(int x, int y)
 {
     POINT originalPos;

@@ -37,6 +37,8 @@ constexpr float CLOSE_Y_RATIO = 510.0f / BASE_HEIGHT; // ≈ 0.354
 constexpr float MIDDLE_WINDOW_X = 0.5f;
 constexpr float MIDDLE_WINDOW_Y = 0.5f;
 
+constexpr int CLICK_DELAY_MS = 250;
+
 std::tuple<POINT, POINT, POINT, POINT> GetScaledClickPositions()
 {
     int screen_width = GetSystemMetrics(SM_CXSCREEN);
@@ -112,19 +114,6 @@ void RenderType::render(ID3D11Device *pd3dDevice)
             const auto screen_height = GetSystemMetrics(SM_CYSCREEN);
             auto [remove_pos, respawn_pos, close_pos, middle_pos] = GetScaledClickPositions();
 
-            // #if _DEBUG
-            //             if (currently_in_fight)
-            //                 ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Status: IN COMBAT");
-            //             else
-            //                 ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Status: Out of combat");
-            //             ImGui::Text("Screen: %dx%d", screen_width, screen_height);
-            //             ImGui::Text("Remove pos: (%d, %d)", remove_pos.x, remove_pos.y);
-            //             ImGui::Text("Respawn pos: (%d, %d)", respawn_pos.x, respawn_pos.y);
-            //             ImGui::Spacing();
-            // #endif
-
-            ImGui::Spacing();
-
             const auto button_width1 = (window_width - ImGui::GetStyle().ItemSpacing.x) * 0.35f;
             const auto button_width2 = (window_width - ImGui::GetStyle().ItemSpacing.x) * 0.65f;
 
@@ -135,12 +124,12 @@ void RenderType::render(ID3D11Device *pd3dDevice)
 
                 std::thread([=]() {
                     UseInteractionKey();
-                    Sleep(200);
+                    Sleep(CLICK_DELAY_MS);
                     SimulateMouseClick(respawn_pos.x, respawn_pos.y);
-                    Sleep(200);
+                    Sleep(CLICK_DELAY_MS);
                     SimulateMouseClick(close_pos.x, close_pos.y);
-                    Sleep(200);
-                    SimulateMouseClick(middle_pos.x, middle_pos.y);
+                    Sleep(CLICK_DELAY_MS);
+                    MoveMouse(middle_pos.x, middle_pos.y);
                 }).detach();
             }
 
@@ -153,14 +142,14 @@ void RenderType::render(ID3D11Device *pd3dDevice)
 
                 std::thread([=]() {
                     UseInteractionKey();
-                    Sleep(200);
+                    Sleep(CLICK_DELAY_MS);
                     SimulateMouseClick(remove_pos.x, remove_pos.y);
-                    Sleep(200);
+                    Sleep(CLICK_DELAY_MS);
                     SimulateMouseClick(respawn_pos.x, respawn_pos.y);
-                    Sleep(200);
+                    Sleep(CLICK_DELAY_MS);
                     SimulateMouseClick(close_pos.x, close_pos.y);
-                    Sleep(200);
-                    SimulateMouseClick(middle_pos.x, middle_pos.y);
+                    Sleep(CLICK_DELAY_MS);
+                    MoveMouse(middle_pos.x, middle_pos.y);
                 }).detach();
             }
         }
