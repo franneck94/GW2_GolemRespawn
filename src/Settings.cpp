@@ -26,7 +26,7 @@ void Load(std::filesystem::path aPath)
     {
         try
         {
-            std::ifstream file(aPath);
+            auto file = std::ifstream(aPath);
             Settings = json::parse(file);
             file.close();
         }
@@ -38,7 +38,6 @@ void Load(std::filesystem::path aPath)
     }
     Settings::Mutex.unlock();
 
-    /* Widget */
     if (!Settings[SHOW_WINDOW].is_null())
         Settings[SHOW_WINDOW].get_to<bool>(ShowWindow);
 
@@ -57,7 +56,7 @@ void Save(std::filesystem::path aPath)
         Settings[CENTER_MOUSE] = CenterMouse;
         Settings[EXPERIMENTAL_FIGHT_LOGIC] = ExperimentalFightLogic;
 
-        std::ofstream file(aPath);
+        auto file = std::ofstream(aPath);
         file << Settings.dump(1, '\t') << std::endl;
         file.close();
     }
