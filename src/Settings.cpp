@@ -9,6 +9,7 @@
 #include "Shared.h"
 
 const char *SHOW_WINDOW = "ShowWindow";
+const char *CENTER_MOUSE = "CenterMouse";
 
 namespace Settings
 {
@@ -39,6 +40,9 @@ void Load(std::filesystem::path aPath)
     /* Widget */
     if (!Settings[SHOW_WINDOW].is_null())
         Settings[SHOW_WINDOW].get_to<bool>(ShowWindow);
+
+    if (!Settings[CENTER_MOUSE].is_null())
+        Settings[CENTER_MOUSE].get_to<bool>(CenterMouse);
 }
 
 void Save(std::filesystem::path aPath)
@@ -46,6 +50,7 @@ void Save(std::filesystem::path aPath)
     Settings::Mutex.lock();
     {
         Settings[SHOW_WINDOW] = ShowWindow;
+        Settings[CENTER_MOUSE] = CenterMouse;
 
         std::ofstream file(aPath);
         file << Settings.dump(1, '\t') << std::endl;
@@ -64,4 +69,5 @@ void ToggleShowWindow(std::filesystem::path SettingsPath)
 }
 
 bool ShowWindow = true;
+bool CenterMouse = true;
 } // namespace Settings

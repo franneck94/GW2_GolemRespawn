@@ -129,7 +129,8 @@ void RenderType::render(ID3D11Device *pd3dDevice)
                     Sleep(CLICK_DELAY_MS);
                     SimulateMouseClick(close_pos.x, close_pos.y);
                     Sleep(CLICK_DELAY_MS);
-                    MoveMouse(middle_pos.x, middle_pos.y);
+                    if (Settings::CenterMouse)
+                        MoveMouse(middle_pos.x, middle_pos.y);
                 }).detach();
             }
 
@@ -149,7 +150,9 @@ void RenderType::render(ID3D11Device *pd3dDevice)
                     Sleep(CLICK_DELAY_MS);
                     SimulateMouseClick(close_pos.x, close_pos.y);
                     Sleep(CLICK_DELAY_MS);
-                    MoveMouse(middle_pos.x, middle_pos.y);
+                    if (Settings::CenterMouse) {
+                        MoveMouse(middle_pos.x, middle_pos.y);
+                    }
                 }).detach();
             }
         }

@@ -15,6 +15,7 @@ using json = nlohmann::json;
 #include "rtapi/RTAPI.hpp"
 
 extern const char *SHOW_WINDOW;
+extern const char *CENTER_MOUSE;
 
 namespace Settings
 {
@@ -26,6 +27,7 @@ void Save(std::filesystem::path aPath);
 void ToggleShowWindow(std::filesystem::path SettingsPath);
 
 extern bool ShowWindow;
+extern bool CenterMouse;
 } // namespace Settings
 
 #endif

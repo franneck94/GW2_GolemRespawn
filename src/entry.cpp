@@ -218,4 +218,9 @@ void AddonRender()
 
 void AddonOptions()
 {
+    if (ImGui::Checkbox("Show Window", &Settings::ShowWindow))
+        Settings::Save(Globals::SettingsPath);
+
+    if (ImGui::Checkbox("Center Mouse After Action", &Settings::CenterMouse))
+        Settings::Save(Globals::SettingsPath);
 }
