@@ -10,6 +10,7 @@
 
 const char *SHOW_WINDOW = "ShowWindow";
 const char *CENTER_MOUSE = "CenterMouse";
+const char *EXPERIMENTAL_FIGHT_LOGIC = "ExperimentalFightLogic";
 
 namespace Settings
 {
@@ -43,6 +44,9 @@ void Load(std::filesystem::path aPath)
 
     if (!Settings[CENTER_MOUSE].is_null())
         Settings[CENTER_MOUSE].get_to<bool>(CenterMouse);
+
+    if (!Settings[EXPERIMENTAL_FIGHT_LOGIC].is_null())
+        Settings[EXPERIMENTAL_FIGHT_LOGIC].get_to<bool>(ExperimentalFightLogic);
 }
 
 void Save(std::filesystem::path aPath)
@@ -51,6 +55,7 @@ void Save(std::filesystem::path aPath)
     {
         Settings[SHOW_WINDOW] = ShowWindow;
         Settings[CENTER_MOUSE] = CenterMouse;
+        Settings[EXPERIMENTAL_FIGHT_LOGIC] = ExperimentalFightLogic;
 
         std::ofstream file(aPath);
         file << Settings.dump(1, '\t') << std::endl;
@@ -70,4 +75,5 @@ void ToggleShowWindow(std::filesystem::path SettingsPath)
 
 bool ShowWindow = true;
 bool CenterMouse = true;
+bool ExperimentalFightLogic = false;
 } // namespace Settings

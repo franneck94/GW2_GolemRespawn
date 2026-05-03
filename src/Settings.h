@@ -16,6 +16,7 @@ using json = nlohmann::json;
 
 extern const char *SHOW_WINDOW;
 extern const char *CENTER_MOUSE;
+extern const char *EXPERIMENTAL_FIGHT_LOGIC;
 
 namespace Settings
 {
@@ -28,6 +29,7 @@ void ToggleShowWindow(std::filesystem::path SettingsPath);
 
 extern bool ShowWindow;
 extern bool CenterMouse;
+extern bool ExperimentalFightLogic;
 } // namespace Settings
 
 #endif

@@ -223,4 +223,12 @@ void AddonOptions()
 
     if (ImGui::Checkbox("Center Mouse After Action", &Settings::CenterMouse))
         Settings::Save(Globals::SettingsPath);
+
+    if (ImGui::Checkbox("[EXPERIMENTAL] Smart Button Logic", &Settings::ExperimentalFightLogic))
+        Settings::Save(Globals::SettingsPath);
+
+    if (Settings::ExperimentalFightLogic)
+    {
+        ImGui::TextWrapped("Smart Logic: Shows only relevant buttons based on fight state.");
+    }
 }

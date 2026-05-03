@@ -90,8 +90,19 @@ void RenderType::render(ID3D11Device *pd3dDevice)
     static ImVec2 window_pos = ImVec2(100, 100);
     static ImVec2 window_size = ImVec2(200, 120);
     static bool first_time = true;
+    static bool was_in_fight_since_reset = false;  // Track if user was in fight since last golem reset
 
     bool currently_in_fight = IsInfight();
+
+    // Update fight tracking for experimental logic
+    if (Settings::ExperimentalFightLogic)
+    {
+        // If we enter fight, mark that we've been in fight since reset
+        if (currently_in_fight && !was_in_fight)
+        {
+            was_in_fight_since_reset = true;
+        }
+    }
 
     if (show_golem_window)
     {
@@ -117,10 +128,39 @@ void RenderType::render(ID3D11Device *pd3dDevice)
             const auto button_width1 = (window_width - ImGui::GetStyle().ItemSpacing.x) * 0.35f;
             const auto button_width2 = (window_width - ImGui::GetStyle().ItemSpacing.x) * 0.65f;
 
-            if (ImGui::Button("Respawn", ImVec2(button_width1, 40)))
+            // Determine which buttons to show based on experimental logic
+            bool show_respawn_button = true;
+            bool show_reset_respawn_button = true;
+
+            if (Settings::ExperimentalFightLogic)
+            {
+                if (currently_in_fight)
+                {
+                    // User is currently in fight -> show only Reset->Respawn
+                    show_respawn_button = false;
+                    show_reset_respawn_button = true;
+                }
+                else if (was_in_fight_since_reset)
+                {
+                    // User was in fight since last reset but not currently -> show only Respawn
+                    show_respawn_button = true;
+                    show_reset_respawn_button = false;
+                }
+                // If neither condition is true, show both buttons (default behavior)
+            }
+
+            bool button_on_same_line = false;
+
+            if (show_respawn_button && ImGui::Button("Respawn", ImVec2(show_reset_respawn_button ? button_width1 : window_width - ImGui::GetStyle().WindowPadding.x * 2, 40)))
             {
                 const auto log_message = GetLogMessage();
                 auto [remove_pos, respawn_pos, close_pos, middle_pos] = GetScaledClickPositions();
+
+                // Reset fight tracking when respawn action is performed
+                if (Settings::ExperimentalFightLogic)
+                {
+                    was_in_fight_since_reset = false;
+                }
 
                 std::thread([=]() {
                     UseInteractionKey();
@@ -132,14 +172,24 @@ void RenderType::render(ID3D11Device *pd3dDevice)
                     if (Settings::CenterMouse)
                         MoveMouse(middle_pos.x, middle_pos.y);
                 }).detach();
+                button_on_same_line = true;
             }
 
-            ImGui::SameLine();
+            if (show_respawn_button && show_reset_respawn_button)
+            {
+                ImGui::SameLine();
+            }
 
-            if (ImGui::Button("Reset->Respawn", ImVec2(button_width2, 40)))
+            if (show_reset_respawn_button && ImGui::Button("Reset->Respawn", ImVec2(show_respawn_button ? button_width2 : window_width - ImGui::GetStyle().WindowPadding.x * 2, 40)))
             {
                 const auto log_message = GetLogMessage();
                 auto [remove_pos, respawn_pos, close_pos, middle_pos] = GetScaledClickPositions();
+
+                // Reset fight tracking when reset action is performed
+                if (Settings::ExperimentalFightLogic)
+                {
+                    was_in_fight_since_reset = false;
+                }
 
                 std::thread([=]() {
                     UseInteractionKey();
